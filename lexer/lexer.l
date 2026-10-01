@@ -35,6 +35,9 @@
 #define VOID 329
 #define WHILE 330
 
+#define QBR_LIN 331
+
+int line = 1;
 %}
 
 DIGITO [0-9]
@@ -51,7 +54,9 @@ LETRA [a-zA-Z]
 {LETRA}{LETRA}*	            return ID;
 {DIGITO}{DIGITO}*			return NUM;
 
-"/*"([^*]|\*+[^*/])*\*+"/"
+"/*"([^*]|\*+[^*/])*\*+"/"   { int i; for (i = 0; yytext[i]; i++) if (yytext[i] == '\n') line++; }
+"/*"([^*]|\*+[^*/])*         { printf("ERRO lexico na linha %d: comentario nao fechado\n", line); }
+
 
 "+"				return SOM;
 "-"				return SUB;
@@ -72,8 +77,8 @@ LETRA [a-zA-Z]
 "]"				return COL_DIR;
 "{"				return CHV_ESQ;
 "}"				return CHV_DIR;
-
-[ \t\r\n]+
+\n              return QBR_LIN;
+[ \t\r]+        /* ignora espacos e tabs */
 
 <<EOF>>         return FIM;
 .           return ERR;
@@ -81,11 +86,8 @@ LETRA [a-zA-Z]
 
 int main(int argc, char *argv[])
 {
-  int token, i, buf[100];
+  int token;
   FILE *f_in;
- 
-  for (i=0;i<=99;i++) buf[i] = 0;
- 
 
   if (argc == 2)
   {
@@ -93,32 +95,16 @@ int main(int argc, char *argv[])
     else  perror(argv[0]);
   }
   else  yyin = stdin;
-  
-  i = 0;
   while ((token=yylex())!=FIM)
   {
-    buf[i] = token;
-    i++;
-  }
-
-  i = 0;
-  while (buf[i] != 0)
-  {
-    switch(buf[i])
+    switch(token)
     {
-      case NUM: printf("NUM "); break;
-      case ID:  printf("ID ");  break;
-      case SOM: printf("+ ");   break;
-      case SUB: printf("- ");   break;
-      case MUL: printf("* ");   break;
-      case DIV: printf("/ ");   break;
-      case IGL: printf(" = ");  break;
-      case PEV: printf("; \n"); break;
-      case APR: printf("( ");   break;
-      case FPR: printf(") ");   break;
-      case ERR: printf("ERR "); break;
+      case QBR_LIN:   line++;    break;
+
+      case ERR:       printf("ERRO lexico na linha %d: caractere invalido '%s'\n", line, yytext);    break;
+
+      default:        break;
     }
-    i++;
   }
   return(0);
 }
