@@ -38,14 +38,14 @@ tipo_especificador : INT
                    | VOID
                    ;
 
-fun_declaracao.    : tipo_especificador ID PAR_ESQ params PAR_DIR composto_decl
+fun_declaracao    : tipo_especificador ID PAR_ESQ params PAR_DIR composto_decl
                    ;
 
 params             : param_lista
                    | VOID
                    ;
 
-param_lista.       : param_lista VIR param
+param_lista       : param_lista VIR param
                    | param
                    ;
 
@@ -56,3 +56,24 @@ param              : tipo_especificador ID
 composto_decl      : CHV_ESQ local_declaracoes statement_lista CHV_DIR
                    ;
 
+%%
+
+void yyerror(const char *s){
+  printf("ERRO sintatico na linha %d: %s\n", line, s);
+}
+
+int main(int argc, char *argv[]){
+  FILE *f_in;
+
+  if (argc == 2){
+    if (f_in = fopen(argv[1], "r"))  yyin = f_in;
+    else { perror(argv[0]); return 1; }
+  }else{
+    yyin = stdin;
+  }
+
+  if (yyparse() == 0)
+    printf("Analise sintatica concluida com sucesso.\n");
+
+  return 0;
+}

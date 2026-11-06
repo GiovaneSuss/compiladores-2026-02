@@ -51,3 +51,4 @@ LETRA [a-zA-Z]
 
 %%
 
+int yywrap(void) { return 1; }
