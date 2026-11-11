@@ -1,6 +1,8 @@
 %{
 #include <stdlib.h>
 #include <stdio.h>
+#include "util.h"
+#define YYSTYPE TreeNode *
 #include "parser.tab.h"
 
 int line = 1;
@@ -19,8 +21,12 @@ LETRA [a-zA-Z]
 "void"          return VOID;
 "while"         return WHILE;
 
-{LETRA}{LETRA}*	            return ID;
-{DIGITO}{DIGITO}*			return NUM;
+{LETRA}{LETRA}*	            { yylval = newExpNode(IdK);
+                              yylval->attr.name = copyString(yytext);
+                              return ID; }
+{DIGITO}{DIGITO}*			{ yylval = newExpNode(ConstK);
+                              yylval->attr.val = atoi(yytext);
+                              return NUM; }
 
 "/*"([^*]|\*+[^*/])*\*+"/"   { int i; for (i = 0; yytext[i]; i++) if (yytext[i] == '\n') line++; }
 "/*"([^*]|\*+[^*/])*         { int i; printf("ERRO LÉXICO: comentário não fechado LINHA: %d\n", line); erros_lexicos++;

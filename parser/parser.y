@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "util.h"
+
 int yylex(void);
 void yyerror(const char *s);
 
@@ -11,6 +13,9 @@ extern char *yytext;
 
 int erros_lexicos=0;
 int erros_sintaticos=0;
+
+#define YYSTYPE TreeNode *
+static TreeNode * finalTree;
 %}
 
 %token ID NUM
@@ -163,6 +168,7 @@ int main(int argc, char *argv[]){
 
   if (yyparse() == 0 && erros_lexicos == 0 && erros_sintaticos == 0) {
     printf("Analise sintatica concluida com sucesso.\n");
+    printTree(finalTree);
   } else {
     printf("Analise sintatica finalizou com %d erros lexicos e %d erros sintaticos.\n",erros_lexicos, erros_sintaticos);
   }
