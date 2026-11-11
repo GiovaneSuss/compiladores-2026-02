@@ -4,6 +4,8 @@
 #include "parser.tab.h"
 
 int line = 1;
+
+extern int erros_lexicos;
 %}
 
 DIGITO [0-9]
@@ -21,7 +23,7 @@ LETRA [a-zA-Z]
 {DIGITO}{DIGITO}*			return NUM;
 
 "/*"([^*]|\*+[^*/])*\*+"/"   { int i; for (i = 0; yytext[i]; i++) if (yytext[i] == '\n') line++; }
-"/*"([^*]|\*+[^*/])*         { int i; printf("ERRO lexico na linha %d: comentario nao fechado\n", line);
+"/*"([^*]|\*+[^*/])*         { int i; printf("ERRO LÉXICO: comentário não fechado LINHA: %d\n", line); erros_lexicos++;
                                for (i = 0; yytext[i]; i++) if (yytext[i] == '\n') line++; }
 
 
@@ -47,7 +49,7 @@ LETRA [a-zA-Z]
 \n              { line++; };
 [ \t\r]+        /* ignora espacos e tabs */
 
-.           { printf("ERRO lexico na linha %d: caractere invalido '%s'\n", line, yytext);};
+.           { printf("ERRO LÉXICO: caractere inválido '%s' LINHA: %d\n", yytext, line); erros_lexicos++;};
 
 %%
 
