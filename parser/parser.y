@@ -28,44 +28,110 @@ static TreeNode * finalTree;
 %%
 
 programa           : declaracao_lista
+                        { savedTree = $1;}
                    ;
 
 declaracao_lista   : declaracao_lista declaracao
+                        { TreeNode * t = $1;
+                          if (t != NULL) {
+                              while (t->sibling != NULL) t = t->sibling;
+                              t->sibling = $2;
+                              $$ = $1;
+                          }
+                          else
+                              $$ = $2;
+                        }
                    | declaracao
+                        { $$ = $1; }
                    ;
 
 declaracao         : var_declaracao
+                        { $$ = $1; }
                    | fun_declaracao
+                        { $$ = $1; }
                    ;
 
 var_declaracao     : tipo_especificador ID PEV
+                        { $$ = newDeclNode(VarK);
+                          $$->type = $1->type;
+                          $$->attr.name = $2->attr.name;
+                        }
                    | tipo_especificador ID COL_ESQ NUM COL_DIR PEV
+                        { $$ = newDeclNode(VetorK);
+                          $$->type = $1->type;
+                          $$->attr.name = $2->attr.name;
+                          $$->child[0] = $4;
+                        }
                    ;
 
 tipo_especificador : INT
+                        { $$ = newDeclNode(VarK);
+                          $$->type = Integer; }
                    | VOID
+                        { $$ = newDeclNode(VarK);
+                          $$->type = Void;}
                    ;
 
 fun_declaracao    : tipo_especificador ID PAR_ESQ params PAR_DIR composto_decl
+                        { $$ = newDeclNode(FunK);
+                          $$->type = $1->type;
+                          $$->attr.name = $2->attr.name;
+                          $$->child[0] = $4;
+                          $$->child[1] = $6;
+                        }
                    ;
 
 params             : param_lista
+                        { $$ = $1; }
                    | VOID
+                        { $$ = NULL; }
                    ;
 
-param_lista       : param_lista VIR param
+param_lista        : param_lista VIR param
+                        { TreeNode * t = $1;
+                          if (t != NULL) {
+                              while (t->sibling != NULL) t = t->sibling;
+                              t->sibling = $3;
+                              $$ = $1;
+                          }
+                          else
+                              $$ = $3;
+                        }
                    | param
+                        { $$ = $1;}
                    ;
 
 param              : tipo_especificador ID
+                        { $$ = newDeclNode(ParamK);
+                          $$->type = $1->type;
+                          $$->attr.name = $2->attr.name;
+                        }
                    | tipo_especificador ID COL_ESQ COL_DIR
+                        { $$ = newDeclNode(ParamVetorK);
+                          $$->type = $1->type;
+                          $$->attr.name = $2->attr.name;
+                        }
                    ;
 
 composto_decl      : CHV_ESQ local_declaracoes statement_lista CHV_DIR
+                        { $$ = newStmtNode(CompostoK);
+                          $$->child[0] = $2;
+                          $$->child[1] = $3;
+                        }
                    ;
 
 local_declaracoes  : local_declaracoes var_declaracao
-                   |
+                        { TreeNode * t = $1;
+                          if (t != NULL) {
+                            while (t->sibling != NULL) t = t->sibling;
+                            t->sibling = $2;
+                            $$ = $1;
+                          }
+                          else
+                              $$ = $2;
+                        }
+                   |    
+                        { $$ = NULL; }
                    ;
 
 statement_lista    : statement_lista statement
